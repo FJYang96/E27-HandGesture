@@ -1,17 +1,6 @@
 import cv2
 import numpy as np
-
-"""
-# Read Image
-image = cv2.imread('./Marcel-Train/Five/Five-train001.ppm', \
-        cv2.IMREAD_GRAYSCALE)
-
-# Show Original Image
-cv2.imshow('win',image)
-while cv2.waitKey() < 0 : pass
-"""
-# Background, used for background subtraction(temporal average)
-#global bg
+from sys import argv
 
 def extract(image, mode="Adaptive"):
     """
@@ -72,20 +61,47 @@ def displayContour(contour, image, drawOn=False,color=[0,255,0],filled=-1):
 #    bg = alpha * bg + (1-alpha) * frame.astype(float)
 #    return new_frame
 
-cap = cv2.VideoCapture(0)
+camera = False
 
-fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold=5)
+if len(argv) > 2:
+    print "Cannot parse input\nUsage: python gesture.py [filename]"
+    print "Running the program without a filename argument means\
+            running it on a camera device"
+    exit(1)
+elif len(argv) == 1:
+    print "Running on camera mode"
+    camera = True
+else:
+    print "Running on input image"
 
-while( cap.isOpened() ):
-    ret, image = cap.read()
-    img = image.copy()
-    fg_mask = fgbg.apply(image)
-    contour = findLargestContour(fg_mask)
-    if contour is None:
-        continue
-    display = displayContour(contour,img,drawOn=True)
-    hull = cv2.convexHull(contour)
-    display = displayContour(hull,img,True,[255,0,0],1)
-    cv2.imshow('foreground', display)
-    cv2.imshow('video',img)
-    cv2.waitKey(5)
+# Read Image
+image = cv2.imread('./Marcel-Train/Five/Five-train001.ppm', \
+        cv2.IMREAD_GRAYSCALE)
+img = extract(image)
+contour = findLargestContour(img)
+hull = cv2.convexHull(contour,returnPoints=False)
+print hull
+defects = cv2.convexityDefects(contour,hull)
+print defects
+dis = displayContour(hull, image, drawOn=True)
+# Show Original Image
+cv2.imshow('win',image)
+while cv2.waitKey() < 0 : pass
+
+if camera:
+    cap = cv2.VideoCapture(0)
+
+    fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold=5)
+
+    while( cap.isOpened() ):
+        ret, image = cap.read()
+        img = image.copy()
+        fg_mask = fgbg.apply(image)
+        contour = findLargestContour(fg_mask)
+        if contour is None:
+            continue
+        display = displayContour(contour,img,drawOn=True)
+        hull = cv2.convexHull(contour)
+        display = displayContour(hull,img,True,[255,0,0],1)
+        cv2.imshow('video',img)
+        cv2.waitKey(5)
