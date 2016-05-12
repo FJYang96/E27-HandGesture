@@ -48,14 +48,14 @@ def findLargestContour(image):
             ci = i
     return contours[ci]
 
-def displayContour(contour, image, drawOn=False):
+def displayContour(contour, image, drawOn=False,color=[0,255,0],filled=-1):
     ## Draw Contours
     display = np.zeros((image.shape[0],image.shape[1],3),dtype='uint8')
-    cv2.drawContours( display, [contour], 0, [0,255,0], -1)
+    cv2.drawContours( display, [contour], 0, color, filled)
     if not drawOn:
         return display
     else:
-        cv2.drawContours( image, [contour], 0, [0,255,0], -1)
+        cv2.drawContours( image, [contour], 0, color, filled)
         return display
 
 #def tempAve(bg, frame):
@@ -74,7 +74,7 @@ def displayContour(contour, image, drawOn=False):
 
 cap = cv2.VideoCapture(0)
 
-fgbg = cv2.createBackgroundSubtractorMOG2()
+fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold=5)
 
 while( cap.isOpened() ):
     ret, image = cap.read()
@@ -85,7 +85,7 @@ while( cap.isOpened() ):
         continue
     display = displayContour(contour,img,drawOn=True)
     hull = cv2.convexHull(contour)
-    cv2.drawContours( display, [hull], 0, [255,0,0], 1)
+    display = displayContour(hull,img,True,[255,0,0],1)
     cv2.imshow('foreground', display)
     cv2.imshow('video',img)
     cv2.waitKey(5)
