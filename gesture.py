@@ -13,10 +13,11 @@ while cv2.waitKey() < 0 : pass
 # Background, used for background subtraction(temporal average)
 #global bg
 
-def extract(img, mode="Adaptive"):
+def extract(image, mode="Adaptive"):
     """
     Take a gray-scale image and threshold it + apply morphological ops
     """
+    img = image.copy()
     if mode == "Adaptive":
         # Use Gaussian adaptive thres
         thres = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
@@ -34,42 +35,57 @@ def findLargestContour(image):
     # Find Contour
     image, contours, hierarchy = cv2.findContours(image, cv2.RETR_CCOMP,\
             cv2.CHAIN_APPROX_SIMPLE)
-    print 'found', len(contours), 'contours'
+    if len(contours) == 0:
+        return None
     # Find the biggest one
     max_area = 0
+    ci = 0
     for i in range(len(contours)):
         cnt = contours[i]
         area = cv2.contourArea(cnt)
         if area > max_area:
             max_area = area
             ci = i
-    return contours[i]
+    return contours[ci]
 
-def displayContour(contour, image):
+def displayContour(contour, image, drawOn=False):
     ## Draw Contours
     display = np.zeros((image.shape[0],image.shape[1],3),dtype='uint8')
     cv2.drawContours( display, [contour], 0, [0,255,0], -1)
-    return display
+    if not drawOn:
+        return display
+    else:
+        cv2.drawContours( image, [contour], 0, [0,255,0], -1)
+        return display
+
+#def tempAve(bg, frame):
+#    """Update bg, return a masked frame with only the foreground"""
+#    alpha = 0.7
+#    # Find the difference and threshold on the diff
+#    diff = np.absolute(frame - bg.astype('uint8'))
+#    blur = cv2.GaussianBlur(diff, (5,5),0)
+#    _, mask = cv2.threshold(blur, 70,100, cv2.THRESH_BINARY_INV)
+#    bmask = mask.view(np.bool)
+#    new_frame = np.zeros( (frame.shape[0],frame.shape[1]), 'uint8')
+#    new_frame[bmask] = frame[bmask]
+#    # Update background
+#    bg = alpha * bg + (1-alpha) * frame.astype(float)
+#    return new_frame
 
 cap = cv2.VideoCapture(0)
 
-ret, bg = cap.read()
-bg = cv2.cvtColor(bg, cv2.COLOR_BGR2GRAY)
-bg = bg.astype(float)
-
-alpha = 0.95
+fgbg = cv2.createBackgroundSubtractorMOG2()
 
 while( cap.isOpened() ):
     ret, image = cap.read()
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    bg = alpha * bg + (1-alpha) * img
-    bg_show = bg.astype('uint8')
-    fg_show = img - bg_show
-    fg_show = extract(fg_show)
-    cv2.imshow('win', fg_show)
-    while cv2.waitKey(5) < 0: pass
-    # TODO:Check ret
-    contour = findLargestContour(img)
-    display = displayContour(contour, img)
+    img = image.copy()
+    fg_mask = fgbg.apply(image)
+    contour = findLargestContour(fg_mask)
+    if contour is None:
+        continue
+    display = displayContour(contour,img,drawOn=True)
     hull = cv2.convexHull(contour)
-    cv2.drawContours( display, [hull], 0, [0,255,0], -1)
+    cv2.drawContours( display, [hull], 0, [255,0,0], 1)
+    cv2.imshow('foreground', display)
+    cv2.imshow('video',img)
+    cv2.waitKey(5)
