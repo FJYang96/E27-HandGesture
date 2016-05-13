@@ -70,6 +70,7 @@ def findCenter(points, center_estimate=None):
     if len(points) < 3:
         return (int(cent[0]), int(cent[1]))
 
+    return (int(cent[0]), int(cent[1]))
     for i in range(3):
         # Find the three closest points
         sorted(points,\
@@ -79,9 +80,10 @@ def findCenter(points, center_estimate=None):
         x2, y2 = points[1]
         x3, y3 = points[2]
         # Hard coded equation
-        cent[0] = det(np.array([x1**2+y1**2,y1,1],[x2**2+y2**2,y2,1],[x3**2+y3**2,y3,1])) / float(2*det(np.array([x1,y1,1],[x2,y2,1],[x3,y3,1]))) 
-        cent[1] = det(np.array([x1,x1**2+y1**2,1],[x2,x2**2+y2**2,1],[x3,x3**2+y3**2,1])) / float(2*det(np.array([x1,y1,1],[x2,y2,1],[x3,y3,1]))) 
+        #cent[0] = det(np.array(([x1**2+y1**2,y1,1],[x2**2+y2**2,y2,1],[x3**2+y3**2,y3,1]))) / float(2*det(np.array(([x1,y1,1],[x2,y2,1],[x3,y3,1]))))
+        #cent[1] = det(np.array(([x1,x1**2+y1**2,1],[x2,x2**2+y2**2,1],[x3,x3**2+y3**2,1]))) / float(2*det(np.array(([x1,y1,1],[x2,y2,1],[x3,y3,1]))))
 
+    print cent
     return (int(cent[0]), int(cent[1]))
     
 def handAnalysis(image, contour, hull):
@@ -99,14 +101,12 @@ def handAnalysis(image, contour, hull):
         far = tuple(contour[defect[0,2]][0])
         depth = defect[0,3]
         defs.append(far)
+        cv2.circle(image, far, 3, (255,255,0), -1)
     # Find the center of the palm
-    print defs
-    cent = findCenter(defs)
-    cv2.circle(image, cent, 5, (255,255,0), 2)
+    #cent = findCenter(defs)
+    #cv2.circle(image, cent, 5, (255,255,0), 2)
     # Iteratively find the three closest points in def to current center
      
-
-
 #def tempAve(bg, frame):
 #    """Update bg, return a masked frame with only the foreground"""
 #    alpha = 0.7
@@ -168,4 +168,4 @@ if camera:
         display = displayInfo(img, contour, hull)
         handAnalysis(display, contour, hull)
         cv2.imshow('video',display)
-        cv2.waitKey(5)
+        while cv2.waitKey(5) < 0: pass
