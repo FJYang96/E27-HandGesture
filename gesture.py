@@ -168,4 +168,4 @@ if camera:
         display = displayInfo(img, contour, hull)
         handAnalysis(display, contour, hull)
         cv2.imshow('video',display)
-        while cv2.waitKey(5) < 0: pass
+        cv2.waitKey(5)
