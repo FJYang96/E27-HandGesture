@@ -209,7 +209,7 @@ if not camera:
 # Camera Mode
 if camera:
     print "Running on camera mode"
-    # Create a background subtractor  using MOG2, not detecting shadow
+    # Create a background subtractor using MOG2, not detecting shadow
     fgbg = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
 
     palm_centers = []
