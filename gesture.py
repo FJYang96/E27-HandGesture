@@ -210,7 +210,7 @@ if not camera:
 if camera:
     print "Running on camera mode"
     # Create a background subtractor  using MOG2, not detecting shadow
-    fgbg = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
+    fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold=5,detectShadows=False)
 
     palm_centers = []
 
@@ -236,10 +236,10 @@ if camera:
         handAnalysis(display, contour, hull)
 
         cv2.imshow('video', display)
-        # while cv2.waitKey(1) < 0: pass 
-        k = cv2.waitKey(10)
-        if k == 27:
-            break
+        while cv2.waitKey(1) < 0: pass 
+        #k = cv2.waitKey(10)
+        #if k == 27:
+        #    break
 
 
 ##### Temperal Averaging Implementation #####
